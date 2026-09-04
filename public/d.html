@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>macOS Black Widgets</title>
+
+<style>
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
+
+    body {
+        min-height: 100vh;
+        background:
+            radial-gradient(circle at top left, #222 0%, transparent 35%),
+            radial-gradient(circle at bottom right, #161616 0%, transparent 35%),
+            #080808;
+        color: white;
+        font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display",
+                     "SF Pro Text", Arial, sans-serif;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 30px;
+    }
+
+    .dashboard {
+        width: min(1100px, 100%);
+        display: grid;
+        grid-template-columns: repeat(12, 1fr);
+        gap: 18px;
+    }
+
+    .widget {
+        position: relative;
+        overflow: hidden;
+        background:
+            linear-gradient(145deg,
+                rgba(42, 42, 42, 0.92),
+                rgba(15, 15, 15, 0.96));
+        border: 1px solid rgba(255, 255, 255, 0.09);
+        border-radius: 28px;
+        padding: 22px;
+        box-shadow:
+            0 15px 40px rgba(0, 0, 0, 0.45),
+            inset 0 1px 0 rgba(255, 255, 255, 0.06);
+        backdrop-filter: blur(25px);
+        transition: transform 0.25s ease, border 0.25s ease;
+    }
+
+    .widget:hover {
+        transform: translateY(-4px);
+        border-color: rgba(255, 255, 255, 0.18);
+    }
+
+    .widget::before {
+        content: "";
+        position: absolute;
+        width: 180px;
+        height: 180px;
+        background: radial-gradient(
+            circle,
+            rgba(255, 255, 255, 0.05),
+            transparent 70%
+        );
+        top: -80px;
+        right: -70px;
+        pointer-events: none;
+    }
+
+    .label {
+        color: #8d8d93;
+        font-size: 13px;
+        font-weight: 600;
+        letter-spacing: 0.3px;
+        text-transform: uppercase;
+    }
+
+    /* CLOCK */
+
+    .clock {
+        grid-column: span 5;
+        min-height: 260px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .time {
+        font-size: clamp(52px, 8vw, 100px);
+        font-weight: 700;
+        letter-spacing: -5px;
+        line-height: 1;
+    }
+
+    .date {
+        font-size: 17px;
+        color: #a1a1a6;
+    }
+
+    /* WEATHER */
+
+    .weather {
+        grid-column: span 4;
+        min-height: 260px;
+    }
+
+    .weather-main {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 28px;
+    }
+
+    .temperature {
+        font-size: 68px;
+        font-weight: 700;
+        letter-spacing: -4px;
+    }
+
+    .weather-icon {
+        font-size: 70px;
+        filter: grayscale(1);
+    }
+
+    .weather-info {
+        margin-top: 25px;
+        display: flex;
+        justify-content: space-between;
+        color: #aaa;
+        font-size: 14px;
+    }
+
+    /* BATTERY */
+
+    .battery {
+        grid-column: span 3;
+        min-height: 260px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .battery-value {
+        font-size: 62px;
+        font-weight: 700;
+        letter-spacing: -3px;
+    }
+
+    .battery-bar {
+        width: 100%;
+        height: 14px;
+        border-radius: 20px;
+        background: #222;
+        overflow: hidden;
+        margin-top: 12px;
+        border: 1px solid #333;
+    }
+
+    .battery-progress {
+        width: 76%;
+        height: 100%;
+        border-radius: inherit;
+        background: linear-gradient(90deg, #aaa, #fff);
+    }
+
+    /* MUSIC */
+
+    .music {
+        grid-column: span 7;
+        min-height: 250px;
+        display: flex;
+        gap: 20px;
+        align-items: center;
+    }
+
+    .album {
+        width: 150px;
+        aspect-ratio: 1;
+        flex-shrink: 0;
+        border-radius: 22px;
+        background:
+            radial-gradient(circle at 30% 30%, #555, #111 45%, #000);
+        box-shadow: 0 12px 25px rgba(0, 0, 0, 0.5);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .album::after {
+        content: "◉";
+        position: absolute;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        font-size: 60px;
+        color: rgba(255,255,255,0.15);
+    }
+
+    .track {
+        flex: 1;
+    }
+
+    .song {
+        font-size: 28px;
+        font-weight: 700;
+        margin-top: 8px;
+    }
+
+    .artist {
+        color: #8d8d93;
+        margin-top: 6px;
+    }
+
+    .progress {
+        margin-top: 25px;
+        height: 5px;
+        background: #303030;
+        border-radius: 20px;
+        overflow: hidden;
+    }
+
+    .progress-fill {
+        width: 42%;
+        height: 100%;
+        background: #fff;
+        border-radius: inherit;
+    }
+
+    .controls {
+        margin-top: 22px;
+        display: flex;
+        align-items: center;
+        gap: 24px;
+        font-size: 20px;
+    }
+
+    .play {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        border: 0;
+        background: white;
+        color: black;
+        cursor: pointer;
+        font-size: 16px;
+    }
+
+    /* CALENDAR */
+
+    .calendar {
+        grid-column: span 5;
+        min-height: 250px;
+    }
+
+    .calendar-list {
+        margin-top: 22px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .event {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 12px 14px;
+        background: rgba(255,255,255,0.045);
+        border-radius: 15px;
+    }
+
+    .event-time {
+        color: #888;
+        width: 45px;
+        font-size: 13px;
+    }
+
+    .event-dot {
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        background: #fff;
+        box-shadow: 0 0 12px rgba(255,255,255,.5);
+    }
+
+    .event-name {
+        font-size: 14px;
+    }
+
+    /* SYSTEM */
+
+    .system {
+        grid-column: span 12;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+        padding: 0;
+        background: transparent;
+        border: none;
+        box-shadow: none;
+    }
+
+    .system::before {
+        display: none;
+    }
+
+    .stat {
+        background: linear-gradient(
+            145deg,
+            rgba(38,38,38,.95),
+            rgba(14,14,14,.95)
+        );
+        border: 1px solid rgba(255,255,255,.08);
+        border-radius: 22px;
+        padding: 20px;
+    }
+
+    .stat-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: #999;
+        font-size: 13px;
+    }
+
+    .stat-value {
+        margin-top: 15px;
+        font-size: 34px;
+        font-weight: 700;
+        letter-spacing: -1px;
+    }
+
+    .mini-bars {
+        display: flex;
+        align-items: end;
+        gap: 4px;
+        height: 42px;
+        margin-top: 15px;
+    }
+
+    .mini-bars span {
+        flex: 1;
+        background: linear-gradient(to top, #333, #aaa);
+        border-radius: 4px 4px 2px 2px;
+        opacity: 0.9;
+    }
+
+    @media (max-width: 800px) {
+        .clock,
+        .weather,
+        .battery,
+        .music,
+        .calendar {
+            grid-column: span 12;
+        }
+
+        .system {
+            grid-template-columns: 1fr;
+        }
+
+        .music {
+            align-items: flex-start;
+        }
+    }
+
+    @media (max-width: 500px) {
+        body {
+            padding: 15px;
+        }
+
+        .dashboard {
+            gap: 12px;
+        }
+
+        .widget {
+            border-radius: 22px;
+            padding: 18px;
+        }
+
+        .music {
+            flex-direction: column;
+        }
+
+        .album {
+            width: 100%;
+            aspect-ratio: 16 / 8;
+        }
+    }
+</style>
+</head>
+
+<body>
+
+<main class="dashboard">
+
+    <!-- Часы -->
+    <section class="widget clock">
+        <div class="label">Сейчас</div>
+
+        <div>
+            <div class="time" id="time">12:00</div>
+            <div class="date" id="date">Понедельник, 1 января</div>
+        </div>
+    </section>
+
+    <!-- Погода -->
+    <section class="widget weather">
+        <div class="label">Погода</div>
+
+        <div class="weather-main">
+            <div>
+                <div class="temperature">18°</div>
+                <div style="color:#aaa; margin-top:8px;">Облачно</div>
+            </div>
+
+            <div class="weather-icon">☁</div>
+        </div>
+
+        <div class="weather-info">
+            <span>💧 62%</span>
+            <span>↗ 12 км/ч</span>
+            <span>Мин. 11°</span>
+        </div>
+    </section>
+
+    <!-- Батарея -->
+    <section class="widget battery">
+        <div>
+            <div class="label">Батарея</div>
+            <div class="battery-value">76%</div>
+        </div>
+
+        <div>
+            <div class="battery-bar">
+                <div class="battery-progress"></div>
+            </div>
+            <div style="margin-top:12px; color:#888; font-size:14px;">
+                До полного разряда: 4 ч 32 мин
+            </div>
+        </div>
+    </section>
+
+    <!-- Музыка -->
+    <section class="widget music">
+        <div class="album"></div>
+
+        <div class="track">
+            <div class="label">Сейчас играет</div>
+
+            <div class="song">Midnight City</div>
+            <div class="artist">M83</div>
+
+            <div class="progress">
+                <div class="progress-fill"></div>
+            </div>
+
+            <div class="controls">
+                <span>⏮</span>
+                <button class="play">▶</button>
+                <span>⏭</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Календарь -->
+    <section class="widget calendar">
+        <div class="label">Сегодня</div>
+
+        <div class="calendar-list">
+            <div class="event">
+                <div class="event-time">10:00</div>
+                <div class="event-dot"></div>
+                <div class="event-name">Рабочая встреча</div>
+            </div>
+
+            <div class="event">
+                <div class="event-time">14:30</div>
+                <div class="event-dot"></div>
+                <div class="event-name">Дизайн проекта</div>
+            </div>
+
+            <div class="event">
+                <div class="event-time">19:00</div>
+                <div class="event-dot"></div>
+                <div class="event-name">Свободное время</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Системные показатели -->
+    <section class="system">
+
+        <div class="stat">
+            <div class="stat-top">
+                <span>CPU</span>
+                <span>● Active</span>
+            </div>
+
+            <div class="stat-value">34%</div>
+
+            <div class="mini-bars">
+                <span style="height:30%"></span>
+                <span style="height:65%"></span>
+                <span style="height:45%"></span>
+                <span style="height:80%"></span>
+                <span style="height:55%"></span>
+                <span style="height:90%"></span>
+                <span style="height:60%"></span>
+                <span style="height:75%"></span>
+                <span style="height:40%"></span>
+                <span style="height:68%"></span>
+            </div>
+        </div>
+
+        <div class="stat">
+            <div class="stat-top">
+                <span>MEMORY</span>
+                <span>8 / 16 GB</span>
+            </div>
+
+            <div class="stat-value">50%</div>
+
+            <div class="mini-bars">
+                <span style="height:80%"></span>
+                <span style="height:75%"></span>
+                <span style="height:72%"></span>
+                <span style="height:60%"></span>
+                <span style="height:58%"></span>
+                <span style="height:52%"></span>
+                <span style="height:48%"></span>
+                <span style="height:42%"></span>
+                <span style="height:38%"></span>
+                <span style="height:30%"></span>
+            </div>
+        </div>
+
+        <div class="stat">
+            <div class="stat-top">
+                <span>STORAGE</span>
+                <span>256 GB</span>
+            </div>
+
+            <div class="stat-value">68%</div>
+
+            <div class="mini-bars">
+                <span style="height:68%"></span>
+                <span style="height:68%"></span>
+                <span style="height:68%"></span>
+                <span style="height:68%"></span>
+                <span style="height:68%"></span>
+                <span style="height:68%"></span>
+                <span style="height:68%"></span>
+                <span style="height:68%"></span>
+                <span style="height:68%"></span>
+                <span style="height:68%"></span>
+            </div>
+        </div>
+
+    </section>
+
+</main>
+
+<script>
+    function updateClock() {
+        const now = new Date();
+
+        const time = now.toLocaleTimeString("ru-RU", {
+            hour: "2-digit",
+            minute: "2-digit"
+        });
+
+        const date = now.toLocaleDateString("ru-RU", {
+            weekday: "long",
+            day: "numeric",
+            month: "long"
+        });
+
+        document.getElementById("time").textContent = time;
+
+        document.getElementById("date").textContent =
+            date.charAt(0).toUpperCase() + date.slice(1);
+    }
+
+    updateClock();
+    setInterval(updateClock, 1000);
+</script>
+
+</body>
+</html>

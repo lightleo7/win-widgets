@@ -1,0 +1,32 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "Capability for the main window",
+  "windows": [
+    "*"
+  ],
+  "permissions": [
+    "core:default",
+    "opener:default",
+    {
+      "identifier": "http:default",
+      "config": {
+        "allowlist": [
+          "https://api.open-meteo.com"
+        ]
+      }
+    },
+    "media:default",
+    "media:allow-initialize-session",
+"media:allow-set-metadata",
+"media:allow-set-playback-info",
+"media:allow-set-playback-status",
+"media:allow-set-position",
+"media:allow-clear-metadata",
+"media:allow-get-metadata",
+"media:allow-get-playback-info",
+"media:allow-get-playback-status",
+"media:allow-get-position",
+"media:allow-is-enabled"
+  ]
+}

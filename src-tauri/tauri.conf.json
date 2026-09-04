@@ -1,0 +1,57 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "win-widgets",
+  "version": "0.3.0",
+  "identifier": "com.lightleo7.win-widgets",
+  "build": {
+    "beforeDevCommand": "pnpm dev",
+    "devUrl": "http://localhost:1420",
+    "beforeBuildCommand": "pnpm build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "main",
+        "width": 1400,
+        "height": 850,
+        "visible": false
+      }
+    ],
+    "security": {
+      "assetProtocol": {
+        "scope": {
+          "allow": [
+            "$LOCALDATA/win-widgets/**"
+          ]
+        }
+      }
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "resources": [
+      "resources/WebView2Loader.dll",
+      "resources/libraries"
+    ],
+    "windows": {
+      "wix": {
+        "fragmentPaths": [
+          "./windows/fragments/webview2loader.wxs"
+        ],
+        "componentRefs": [
+          "WebView2Loader"
+        ]
+      },
+      "nsis": {
+        "installMode": "perMachine",
+        "installerHooks": "./windows/hooks.nsh"
+      }
+    },
+    "icon": [
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ]
+  }
+}

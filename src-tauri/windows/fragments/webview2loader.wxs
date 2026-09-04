@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <Fragment>
+    <DirectoryRef Id="INSTALLDIR">
+      <Component Id="WebView2Loader" Guid="*">
+        <File
+          Id="WebView2LoaderDll"
+          Source="../../resources/WebView2Loader.dll"
+          KeyPath="yes"
+        />
+      </Component>
+    </DirectoryRef>
+  </Fragment>
+</Wix>
