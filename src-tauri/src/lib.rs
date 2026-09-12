@@ -15,6 +15,7 @@ mod widgets;
 mod settings;
 mod libraries;
 mod installer;
+mod windows;
 
 use manifest::{save_widget, sync_and_get_manifest};
 use tauri::http::{Response, StatusCode};
@@ -177,6 +178,7 @@ pub fn run() {
         ])
         .setup(|app| {
             println!("[app] setup started");
+            windows::start_power_listener(app.handle().clone());
 
             let current_manifest = match manifest::sync_manifest(app.handle()) {
                 Ok(m) => m,
