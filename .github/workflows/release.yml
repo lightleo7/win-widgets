@@ -24,11 +24,16 @@ jobs:
         with:
           node-level: 20
 
+      - name: install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
       - name: install Rust stable
         uses: dtolnay/rust-toolchain@stable
 
       - name: install frontend dependencies
-        run: npm install
+        run: pnpm install
 
       - uses: tauri-apps/tauri-action@v0
         env:
