@@ -4,21 +4,6 @@ use tauri::{AppHandle, Manager, WebviewUrl, WebviewWindow, WebviewWindowBuilder}
 use crate::manifest;
 
 #[cfg(target_os = "windows")]
-// use std::{
-//     collections::HashMap,
-//     sync::{LazyLock, Mutex},
-// };
-
-// use windows::Win32::UI::WindowsAndMessaging::{GetCursorPos, WindowFromPoint};
-
-// #[cfg(target_os = "windows")]
-// use windows::Win32::{
-//     Foundation::{HWND, LPARAM, LRESULT, WPARAM},
-//     UI::WindowsAndMessaging::{
-//         CallWindowProcW, EnumChildWindows, GetClassNameW, SetWindowLongPtrW, GWL_WNDPROC, HTCLIENT,
-//         WM_MOUSEMOVE, WM_NCHITTEST, WNDPROC,
-//     },
-// };
 
 use std::time::Duration;
 
@@ -29,8 +14,6 @@ async fn reload_widget_internal(
 
     println!("[widget] reloading: {}", widget.id);
 
-    // Если виджет отключён — закрываем его окно,
-    // но заново не создаём.
     if !widget.enabled {
         if let Some(window) =
             app.get_webview_window(&widget.window_label)
@@ -46,7 +29,6 @@ async fn reload_widget_internal(
         return Ok(());
     }
 
-    // Закрываем существующее окно.
     if let Some(window) =
         app.get_webview_window(&widget.window_label)
     {
@@ -57,8 +39,6 @@ async fn reload_widget_internal(
 
         let _ = window.close();
 
-        // Даём WebView нормально завершиться
-        // перед созданием нового.
         tokio::time::sleep(
             Duration::from_millis(100)
         ).await;
