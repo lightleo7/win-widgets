@@ -5409,7 +5409,7 @@ dependencies = [
 
 [[package]]
 name = "win-widgets"
-version = "0.4.0-beta.4"
+version = "0.4.0-beta.5"
 dependencies = [
  "mime_guess",
  "reqwest 0.13.4",
