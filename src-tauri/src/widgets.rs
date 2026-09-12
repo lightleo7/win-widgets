@@ -142,7 +142,6 @@ pub fn create_widget(
         .skip_taskbar(true)
         .always_on_top(false)
         .inner_size(width, height)
-        .position(x, y)
         .visible(true)
         .build()
         .map_err(|e| format!("Failed to create widget '{label}': {e}"))?;
@@ -153,9 +152,7 @@ pub fn create_widget(
         .set_ignore_cursor_events(!interactive)
         .map_err(|e| e.to_string())?;
 
-    println!("[widget] window created: {label}");
-
-    crate::desktop::attach_above_icons(&window)?;
+    crate::desktop::attach_above_icons(&window, x, y)?;
 
     println!("[widget] attached to desktop: {label}");
 
@@ -217,6 +214,11 @@ pub fn move_widget(app: AppHandle, label: String, x: f64, y: f64) -> Result<(), 
     window
         .set_position(tauri::Position::Logical(tauri::LogicalPosition { x, y }))
         .map_err(|e| format!("Failed to move widget '{label}': {e}"))?;
+
+    println!(
+        "[widget] MOVE label={} position=({}, {})",
+        label, x, y
+    );
     Ok(())
 }
 
