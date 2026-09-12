@@ -421,27 +421,6 @@ function App() {
     }
   }
 
-  if (!selectedWidget) {
-    return (
-      <main className="min-h-screen bg-[#0b0c0f] text-zinc-100 dark">
-        <AppHeader
-          onReload={reloadWidgets}
-        />
-
-        <div className="mx-auto max-w-[1400px] px-8 py-6">
-          <AppNavigation
-            activeTab={activeTab}
-            onChange={setActiveTab}
-          />
-
-          <div className="flex min-h-[500px] items-center justify-center text-zinc-500">
-            No widgets installed
-          </div>
-        </div>
-      </main>
-    );
-  }
-
   return (
     <main className="min-h-screen bg-[#0b0c0f] text-zinc-100 dark">
       <AppHeader
@@ -455,7 +434,12 @@ function App() {
         />
 
         <div className="pt-8">
-          {activeTab === "widgets" && (
+          {(activeTab === "widgets" && !selectedWidget) && (
+            <div className="flex min-h-[500px] items-center justify-center text-zinc-500">
+              No widgets installed
+            </div>
+          )}
+          {(activeTab === "widgets" && selectedWidget) && (
             <WidgetsPage
               widgets={widgets}
 
