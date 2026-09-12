@@ -4481,6 +4481,7 @@ dependencies = [
 [[package]]
 name = "tauri-plugin-media"
 version = "0.1.2"
+source = "git+https://github.com/lightleo7/tauri-plugin-media#ca479740b7a63e49f4b6d8567cf25530adc4e424"
 dependencies = [
  "base64 0.22.1",
  "cocoa",
