@@ -25,6 +25,9 @@ use windows::{
 use tauri::Manager;
 
 #[cfg(target_os = "windows")]
+const WM_DISPLAYCHANGE: u32 = 0x007E;
+
+#[cfg(target_os = "windows")]
 const WM_POWERBROADCAST: u32 = 0x0218;
 
 #[cfg(target_os = "windows")]
@@ -106,6 +109,18 @@ unsafe extern "system" fn power_wnd_proc(
 
             _ => {}
         }
+    }
+    if msg == WM_DISPLAYCHANGE {
+        if let Some(app) = APP_HANDLE.get() {
+            let app = app.clone();
+
+            thread::spawn(move || {
+                thread::sleep(Duration::from_millis(50));
+                refresh_widget_windows(&app);
+            });
+        }
+
+        return LRESULT(0);
     }
 
     DefWindowProcW(hwnd, msg, wparam, lparam)
