@@ -38,11 +38,14 @@ import {
   invoke,
 } from "@tauri-apps/api/core";
 
-import {
-  enable,
-  disable,
-  isEnabled,
-} from "@tauri-apps/plugin-autostart";
+export const isAutostartEnabled = () =>
+  invoke<boolean>("is_autostart_enabled");
+
+// import {
+//   enable,
+//   disable,
+//   isEnabled,
+// } from "@tauri-apps/plugin-autostart";
 
 function App() {
   const [activeTab, setActiveTab] =
@@ -85,17 +88,20 @@ function App() {
 
 
   async function handleStartWithWindows(value: boolean) {
-    if (value) {
-      await enable();
-    } else {
-      await disable();
-    }
+
+    // if (value) {
+    //   await enable();
+    // } else {
+    //   await disable();
+    // }
+    
+    await invoke("set_autostart", { enabled: value });
 
     setStartWithWindows(value);
   }
 
   useEffect(() => {
-    isEnabled().then(setStartWithWindows);
+    isAutostartEnabled().then(setStartWithWindows);
   }, []);
 
 
