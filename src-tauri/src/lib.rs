@@ -16,6 +16,7 @@ mod settings;
 mod libraries;
 mod installer;
 mod windows;
+mod autostart;
 
 use manifest::{save_widget, sync_and_get_manifest};
 use tauri::http::{Response, StatusCode};
@@ -94,13 +95,9 @@ async fn http_get(url: String) -> Result<String, String> {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    autostart::maybe_run_service();
     tauri::Builder::default()
-        .plugin(tauri_plugin_autostart::Builder::new().build())
         .plugin(tauri_plugin_media::init())
-        .plugin(tauri_plugin_autostart::init(
-            tauri_plugin_autostart::MacosLauncher::LaunchAgent,
-            None,
-        ))
         .manage(SystemState {
             sys: Mutex::new(System::new_all()),
         })
@@ -175,6 +172,8 @@ pub fn run() {
             installer::install_widgets_from_pack,
             reload_widget,
             installer::remove_widget,
+            autostart::is_autostart_enabled,
+            autostart::set_autostart
         ])
         .setup(|app| {
             println!("[app] setup started");
