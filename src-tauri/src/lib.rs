@@ -26,6 +26,7 @@ use widgets::{
     resize_widget, show_widget, reload_widget
 };
 use settings::{get_current_widget_settings, save_widget_settings};
+use crate::logger::log;
 
 pub struct WidgetManager {
     widgets: Mutex<Vec<String>>,
@@ -95,7 +96,25 @@ async fn http_get(url: String) -> Result<String, String> {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    std::panic::set_hook(Box::new(|panic_info| {
+        if let Some(location) = panic_info.location() {
+            log(
+                "PANIC",
+                format!(
+                    "{}:{}:{} — {}",
+                    location.file(),
+                    location.line(),
+                    location.column(),
+                    panic_info
+                ),
+            );
+        } else {
+            log("PANIC", format!("{}", panic_info));
+        }
+    }));
+
     autostart::maybe_run_service();
+    
     tauri::Builder::default()
         .plugin(tauri_plugin_media::init())
         .manage(SystemState {
@@ -104,7 +123,7 @@ pub fn run() {
         .register_uri_scheme_protocol("widget", move |ctx, request| {
             let uri = request.uri();
 
-            println!("[widget protocol] request: {}", uri);
+            log("WIDGET PROTOCOL", format!("request: {}", uri));
 
             let relative_path = uri.path().trim_start_matches('/');
 
@@ -117,7 +136,7 @@ pub fn run() {
 
             let file_path = base_dir.join(relative_path);
 
-            println!("[widget protocol] file: {}", file_path.display());
+            log("WIDGET PROTOCOL", format!("file: {}", file_path.display()));
 
             if !file_path.exists() {
                 return Response::builder()
@@ -130,11 +149,10 @@ pub fn run() {
                 Ok(data) => data,
 
                 Err(error) => {
-                    eprintln!(
-                        "[widget protocol] failed to read {}: {}",
+                    log("WIDGET PROTOCOL", format!("failed to read {}: {}",
                         file_path.display(),
                         error
-                    );
+                    ));
 
                     return Response::builder()
                         .status(StatusCode::INTERNAL_SERVER_ERROR)
@@ -176,13 +194,13 @@ pub fn run() {
             autostart::set_autostart
         ])
         .setup(|app| {
-            println!("[app] setup started");
+            log("APP", "setup started");
             windows::start_power_listener(app.handle().clone());
 
             let current_manifest = match manifest::sync_manifest(app.handle()) {
                 Ok(m) => m,
                 Err(e) => {
-                    eprintln!("Ошибка инициализации манифеста виджетов: {e}");
+                    log("ERROR", format!("Manifest init error: {e}"));
                     return Ok(());
                 }
             };
@@ -229,7 +247,7 @@ pub fn run() {
 
                         tauri::async_runtime::spawn(async move {
                             if let Err(error) = reload_widgets(app).await {
-                                eprintln!("Failed to reload widgets: {}", error);
+                                log("ERROR", format!("Failed to reload widgets: {}", error));
                             }
                         });
                     }
@@ -252,17 +270,17 @@ pub fn run() {
                 })
                 .build(app)?;
 
-            println!("[tray] ready");
+            log("TRAY", format!("ready"));
 
             for widget in current_manifest.widgets {
                 if !widget.enabled {
-                    println!("[widget] skipped (disabled): {}", widget.id);
+                    log("WIDGET", format!("skipped (disabled): {}", widget.id));
                     continue;
                 }
 
                 let widget_url = format!("widget://localhost/{}/index.html", widget.id);
 
-                println!("[widget] loading: {}", widget_url);
+                log("WIDGET", format!("loading: {}", widget_url));
 
                 if let Err(e) = create_widget(
                     app.handle().clone(),
@@ -274,11 +292,11 @@ pub fn run() {
                     widget.height,
                     widget.interactive,
                 ) {
-                    eprintln!("Не удалось запустить виджет: {e}");
+                    log("ERROR", format!("Cannot start widget: {e}"));
                 }
             }
 
-            println!("[app] setup finished");
+            log("APP", format!("setup finished"));
             Ok(())
         })
         .run(tauri::generate_context!())

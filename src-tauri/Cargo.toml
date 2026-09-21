@@ -34,6 +34,7 @@ tauri-plugin-media = { git = "https://github.com/lightleo7/tauri-plugin-media" }
 walkdir = "2"
 zip = "2"
 uuid = { version = "1", features = ["v4"] }
+chrono = "0.4"
 
 [target.'cfg(windows)'.dependencies]
 windows = { version = "0.61.3", features = [
