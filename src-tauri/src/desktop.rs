@@ -16,6 +16,7 @@ use windows::{
         },
     },
 };
+use crate::logger::log;
 
 #[cfg(target_os = "windows")]
 pub fn attach_above_icons(
@@ -73,7 +74,7 @@ pub fn attach_above_icons(
             return Err("SHELLDLL_DefView not found".to_string());
         }
 
-        println!("[desktop] SHELLDLL_DefView: {:?}", defview.0);
+        log("DESKTOP", format!("SHELLDLL_DefView: {:?}", defview.0));
 
         let parent = GetParent(defview)
             .map_err(|e| e.to_string())?;
@@ -82,7 +83,7 @@ pub fn attach_above_icons(
             return Err("SHELLDLL_DefView parent not found".to_string());
         }
 
-        println!("[desktop] DefView parent: {:?}", parent.0);
+        log("DESKTOP", format!("DefView parent: {:?}", parent.0));
 
         let mut parent_rect = Default::default();
 
