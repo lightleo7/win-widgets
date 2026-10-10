@@ -22,14 +22,12 @@ tauri = { version = "2", features = ["tray-icon", "image-png"] }
 tauri-plugin-opener = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-# tauri-plugin-wallpaper = { git = "https://github.com/meslzy/tauri-plugin-wallpaper" }
 url = "2.5.8"
 tauri-plugin-http = "2.0" 
 tokio = "1.53.1"
 sysinfo = "0.39.6"
 mime_guess = "2"
 reqwest =  { version = "0.13.4", features = ["json"] }
-# tauri-plugin-media = "0.1.1"
 tauri-plugin-media = { git = "https://github.com/lightleo7/tauri-plugin-media" }
 walkdir = "2"
 zip = "2"

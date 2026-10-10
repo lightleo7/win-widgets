@@ -9,6 +9,7 @@ use tauri::{
     Manager, WindowEvent,
 };
 
+mod logger;
 mod desktop;
 mod manifest;
 mod widgets;
@@ -96,6 +97,7 @@ async fn http_get(url: String) -> Result<String, String> {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    log("SERVICE", "process starting...");
     std::panic::set_hook(Box::new(|panic_info| {
         if let Some(location) = panic_info.location() {
             log(

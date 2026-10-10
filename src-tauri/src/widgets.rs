@@ -37,7 +37,7 @@ async fn reload_widget_internal(
 
     let url = format!("widget://localhost/{}/index.html", widget.id);
 
-    log("WIDGET", format!(" creating: {}", url));
+    log("WIDGET", format!("creating: {}", url));
 
     create_widget(
         app.clone(),
@@ -50,7 +50,7 @@ async fn reload_widget_internal(
         widget.interactive,
     )?;
 
-    log("WIDGET", format!(" reload complete: {}", widget.id));
+    log("WIDGET", format!("reload complete: {}", widget.id));
 
     Ok(())
 }
@@ -96,7 +96,7 @@ pub fn create_widget(
         url = format!("widget://localhost/{}", normalized_path);
     }
 
-    log("WIDGET", "opening URL: {url}");
+    log("WIDGET", format!("opening URL: {url}"));
 
     let parsed_url = url
         .parse::<url::Url>()
@@ -111,6 +111,13 @@ pub fn create_widget(
             return Err(format!("Unsupported widget URL scheme: {scheme}"));
         }
     };
+    log(
+        "INFO",
+        format!(
+            "CREATE {} position=({}, {}) size=({}, {})",
+            label, x, y, width, height
+        ),
+    );
 
     let window = WebviewWindowBuilder::new(&app, &label, webview_url)
         .title("")
@@ -128,6 +135,15 @@ pub fn create_widget(
         .build()
         .map_err(|e| format!("Failed to create widget '{label}': {e}"))?;
 
+    log(
+        "INFO",
+        format!(
+            "AFTER BUILD {} position={:?}",
+            label,
+            window.outer_position()
+        ),
+    );
+
     let _hwnd = window.hwnd().map_err(|e| e.to_string())?;
 
     window
@@ -136,7 +152,16 @@ pub fn create_widget(
 
     crate::desktop::attach_above_icons(&window, x, y)?;
 
-    log("WIDGET", "attached to desktop: {label}");
+    log(
+        "INFO",
+        format!(
+            "AFTER ATTACH {} position={:?}",
+            label,
+            window.outer_position()
+        ),
+    );
+
+    log("WIDGET", format!("attached to desktop: {label}"));
 
     let app_clone = app.clone();
     let label_clone = label.clone();
@@ -168,7 +193,7 @@ pub fn close_widget(app: AppHandle, label: String) -> Result<(), String> {
         manager.remove(&label);
     }
 
-    log("WIDGET", "closed: {label}");
+    log("WIDGET", format!("closed: {label}"));
     Ok(())
 }
 
