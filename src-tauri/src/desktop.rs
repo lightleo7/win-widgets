@@ -93,10 +93,16 @@ pub fn attach_above_icons(
         let parent_x = x as i32 - parent_rect.left;
         let parent_y = y as i32 - parent_rect.top;
 
-        SetParent(hwnd, Some(parent))
-            .map_err(|e| e.to_string())?;
+        let result = SetParent(hwnd, Some(parent));
 
-        SetWindowPos(
+        log(
+            "DESKTOP",
+            format!("SetParent result={:?}, hwnd={:?}, parent={:?}", result, hwnd.0, parent.0),
+        );
+
+        result.map_err(|e| e.to_string())?;
+
+        let result = SetWindowPos(
             hwnd,
             Some(HWND_TOP),
             parent_x,
@@ -104,8 +110,15 @@ pub fn attach_above_icons(
             0,
             0,
             SWP_NOSIZE | SWP_NOACTIVATE,
-        )
-        .map_err(|e| e.to_string())?;
+        );
+        log(
+            "DESKTOP",
+            format!(
+                "SetWindowPos result={:?}, pos=({}, {})",
+                result, parent_x, parent_y
+            ),
+        );
+        result.map_err(|e| e.to_string())?;
     }
 
     Ok(())
