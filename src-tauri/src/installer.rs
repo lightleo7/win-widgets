@@ -10,6 +10,7 @@ use tauri::{AppHandle, Manager};
 use uuid::Uuid;
 use zip::ZipArchive;
 
+use crate::logger::log;
 
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -572,15 +573,15 @@ pub async fn remove_widget(
     app: AppHandle,
     widget_id: String,
 ) -> Result<(), String> {
-    println!("[widget] removing: {}", widget_id);
+    log("WIDGET", format!("removing: {}", widget_id));
 
     if let Some(window) =
         app.get_webview_window(&widget_id)
     {
-        println!(
-            "[widget] closing: {}",
+        log("WIDGET", format!(
+            "closing: {}",
             widget_id
-        );
+        ));
 
         let _ = window.close();
 
@@ -610,17 +611,17 @@ pub async fn remove_widget(
         ));
     }
 
-    println!(
-        "[widget] deleting: {}",
+    log("WIDGET", format!(
+        "deleting: {}",
         widget_dir.display()
-    );
+    ));
 
     std::fs::remove_dir_all(&widget_dir)
         .map_err(|e| e.to_string())?;
 
-    println!(
-        "[widget] removed: {}",
-        widget_id
+    log("WIDGET", format!(
+        "removed: {}",
+        widget_id)
     );
 
     Ok(())

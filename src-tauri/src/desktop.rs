@@ -16,6 +16,7 @@ use windows::{
         },
     },
 };
+use crate::logger::log;
 
 #[cfg(target_os = "windows")]
 pub fn attach_above_icons(
@@ -73,7 +74,7 @@ pub fn attach_above_icons(
             return Err("SHELLDLL_DefView not found".to_string());
         }
 
-        println!("[desktop] SHELLDLL_DefView: {:?}", defview.0);
+        log("DESKTOP", format!("SHELLDLL_DefView: {:?}", defview.0));
 
         let parent = GetParent(defview)
             .map_err(|e| e.to_string())?;
@@ -82,7 +83,7 @@ pub fn attach_above_icons(
             return Err("SHELLDLL_DefView parent not found".to_string());
         }
 
-        println!("[desktop] DefView parent: {:?}", parent.0);
+        log("DESKTOP", format!("DefView parent: {:?}", parent.0));
 
         let mut parent_rect = Default::default();
 
@@ -92,10 +93,16 @@ pub fn attach_above_icons(
         let parent_x = x as i32 - parent_rect.left;
         let parent_y = y as i32 - parent_rect.top;
 
-        SetParent(hwnd, Some(parent))
-            .map_err(|e| e.to_string())?;
+        let result = SetParent(hwnd, Some(parent));
 
-        SetWindowPos(
+        log(
+            "DESKTOP",
+            format!("SetParent result={:?}, hwnd={:?}, parent={:?}", result, hwnd.0, parent.0),
+        );
+
+        result.map_err(|e| e.to_string())?;
+
+        let result = SetWindowPos(
             hwnd,
             Some(HWND_TOP),
             parent_x,
@@ -103,8 +110,15 @@ pub fn attach_above_icons(
             0,
             0,
             SWP_NOSIZE | SWP_NOACTIVATE,
-        )
-        .map_err(|e| e.to_string())?;
+        );
+        log(
+            "DESKTOP",
+            format!(
+                "SetWindowPos result={:?}, pos=({}, {})",
+                result, parent_x, parent_y
+            ),
+        );
+        result.map_err(|e| e.to_string())?;
     }
 
     Ok(())

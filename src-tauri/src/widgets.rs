@@ -1,26 +1,24 @@
+use crate::manifest;
 use crate::WidgetManager;
 use serde::Serialize;
 use tauri::{AppHandle, Manager, WebviewUrl, WebviewWindow, WebviewWindowBuilder};
-use crate::manifest;
+
+use crate::logger::log;
 
 #[cfg(target_os = "windows")]
-
 use std::time::Duration;
 
 async fn reload_widget_internal(
     app: &AppHandle,
     widget: manifest::WidgetConfig,
 ) -> Result<(), String> {
-
-    println!("[widget] reloading: {}", widget.id);
+    log("WIDGET", format!("reloading: {}", widget.id));
 
     if !widget.enabled {
-        if let Some(window) =
-            app.get_webview_window(&widget.window_label)
-        {
-            println!(
-                "[widget] closing disabled: {}",
-                widget.window_label
+        if let Some(window) = app.get_webview_window(&widget.window_label) {
+            log(
+                "WIDGET",
+                format!("closing disabled: {}", widget.window_label),
             );
 
             let _ = window.close();
@@ -29,30 +27,17 @@ async fn reload_widget_internal(
         return Ok(());
     }
 
-    if let Some(window) =
-        app.get_webview_window(&widget.window_label)
-    {
-        println!(
-            "[widget] closing: {}",
-            widget.window_label
-        );
+    if let Some(window) = app.get_webview_window(&widget.window_label) {
+        println!("[widget] closing: {}", widget.window_label);
 
         let _ = window.close();
 
-        tokio::time::sleep(
-            Duration::from_millis(100)
-        ).await;
+        tokio::time::sleep(Duration::from_millis(100)).await;
     }
 
-    let url = format!(
-        "widget://localhost/{}/index.html",
-        widget.id
-    );
+    let url = format!("widget://localhost/{}/index.html", widget.id);
 
-    println!(
-        "[widget] creating: {}",
-        url
-    );
+    log("WIDGET", format!("creating: {}", url));
 
     create_widget(
         app.clone(),
@@ -65,10 +50,7 @@ async fn reload_widget_internal(
         widget.interactive,
     )?;
 
-    println!(
-        "[widget] reload complete: {}",
-        widget.id
-    );
+    log("WIDGET", format!("reload complete: {}", widget.id));
 
     Ok(())
 }
@@ -114,7 +96,7 @@ pub fn create_widget(
         url = format!("widget://localhost/{}", normalized_path);
     }
 
-    println!("[widget] opening URL: {url}");
+    log("WIDGET", format!("opening URL: {url}"));
 
     let parsed_url = url
         .parse::<url::Url>()
@@ -129,6 +111,13 @@ pub fn create_widget(
             return Err(format!("Unsupported widget URL scheme: {scheme}"));
         }
     };
+    log(
+        "INFO",
+        format!(
+            "CREATE {} position=({}, {}) size=({}, {})",
+            label, x, y, width, height
+        ),
+    );
 
     let window = WebviewWindowBuilder::new(&app, &label, webview_url)
         .title("")
@@ -146,6 +135,15 @@ pub fn create_widget(
         .build()
         .map_err(|e| format!("Failed to create widget '{label}': {e}"))?;
 
+    log(
+        "INFO",
+        format!(
+            "AFTER BUILD {} position={:?}",
+            label,
+            window.outer_position()
+        ),
+    );
+
     let _hwnd = window.hwnd().map_err(|e| e.to_string())?;
 
     window
@@ -154,7 +152,16 @@ pub fn create_widget(
 
     crate::desktop::attach_above_icons(&window, x, y)?;
 
-    println!("[widget] attached to desktop: {label}");
+    log(
+        "INFO",
+        format!(
+            "AFTER ATTACH {} position={:?}",
+            label,
+            window.outer_position()
+        ),
+    );
+
+    log("WIDGET", format!("attached to desktop: {label}"));
 
     let app_clone = app.clone();
     let label_clone = label.clone();
@@ -186,7 +193,7 @@ pub fn close_widget(app: AppHandle, label: String) -> Result<(), String> {
         manager.remove(&label);
     }
 
-    println!("[widget] closed: {label}");
+    log("WIDGET", format!("closed: {label}"));
     Ok(())
 }
 
@@ -215,9 +222,9 @@ pub fn move_widget(app: AppHandle, label: String, x: f64, y: f64) -> Result<(), 
         .set_position(tauri::Position::Logical(tauri::LogicalPosition { x, y }))
         .map_err(|e| format!("Failed to move widget '{label}': {e}"))?;
 
-    println!(
-        "[widget] MOVE label={} position=({}, {})",
-        label, x, y
+    log(
+        "WIDGET",
+        format!("MOVE label={} position=({}, {})", label, x, y),
     );
     Ok(())
 }
@@ -257,45 +264,25 @@ pub fn get_monitors(app: AppHandle) -> Result<Vec<MonitorInfo>, String> {
 }
 
 #[tauri::command]
-pub async fn reload_widget(
-    app: AppHandle,
-    widget_id: String,
-) -> Result<(), String> {
+pub async fn reload_widget(app: AppHandle, widget_id: String) -> Result<(), String> {
+    log("WIDGET", format!("requested reload: {}", widget_id));
 
-    println!(
-        "[widget] requested reload: {}",
-        widget_id
-    );
-
-    let manifest =
-        crate::manifest::sync_manifest(&app)?;
+    let manifest = crate::manifest::sync_manifest(&app)?;
 
     let widget = manifest
         .widgets
         .into_iter()
         .find(|widget| widget.id == widget_id)
-        .ok_or_else(|| {
-            format!(
-                "Widget not found: {}",
-                widget_id
-            )
-        })?;
+        .ok_or_else(|| format!("Widget not found: {}", widget_id))?;
 
-    reload_widget_internal(
-        &app,
-        widget,
-    ).await
+    reload_widget_internal(&app, widget).await
 }
 
 #[tauri::command]
-pub async fn reload_widgets(
-    app: AppHandle,
-) -> Result<(), String> {
-
+pub async fn reload_widgets(app: AppHandle) -> Result<(), String> {
     println!("[widgets] reloading...");
 
-    let manifest =
-        crate::manifest::sync_manifest(&app)?;
+    let manifest = crate::manifest::sync_manifest(&app)?;
 
     println!(
         "[widgets] manifest reloaded, found {} widgets",
@@ -303,10 +290,7 @@ pub async fn reload_widgets(
     );
 
     for widget in manifest.widgets {
-        reload_widget_internal(
-            &app,
-            widget,
-        ).await?;
+        reload_widget_internal(&app, widget).await?;
     }
 
     println!("[widgets] reload complete");
